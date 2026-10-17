@@ -11,7 +11,7 @@ def chain_existe(nome_chain):
     except subprocess.CalledProcessError:
         return False
     
-def iniciar_chain(nome_chain, peer=None, chave="./tmp/chaves/user.pub"):
+def iniciar_chain(nome_chain, conn, cursor, peer=None, chave="./tmp/chaves/user.pub"):
     try:
         with open(chave, 'r') as arquivo:
             chave_texto = arquivo.read().strip()
@@ -19,14 +19,15 @@ def iniciar_chain(nome_chain, peer=None, chave="./tmp/chaves/user.pub"):
         chains = resultado.stdout.split()
 
         if nome_chain in chains: # se a chain ja existe, retorna
-            print(f"[Chain] {nome_chain} já existe localmente.")
+            print(f"[CHAIN] {nome_chain} já existe localmente.")
             return True         
 
         if peer: # se recebe um peer, clona dele a cadeia
-            print(f"[Chain] Clonando de: {peer}")
+            print(f"[CHAIN] Clonando de: {peer}")
+            add_peer_db(peer, conn, cursor)
             subprocess.run(["freechains", "chains", "add", nome_chain, "clone", peer],capture_output=True, check=True)
         else: # se nao recebe um peer, cria a cadeia do zero
-            print("[Setup] Criando nova cadeia vazia do zero.")
+            print("[CHAIN] Criando nova chain vazia do zero.")
             subprocess.run(["freechains", "chains", "add", nome_chain, "init", f"--pioneer={chave_texto}"],capture_output=True, check=True)    
         return True
 
@@ -52,7 +53,18 @@ def recv_peers(nome_chain, cursor): # faz o recv de todos os peers conhecidos
     lista = cursor.fetchall()
     #para cada peer conhecido da lista, faz um recv
     for peer in lista:
-        subprocess.run(["freechains", "chain", nome_chain, "recv", peer], capture_output=True, check=True)
+        endereco = peer[0]
+        try:
+            subprocess.run(["freechains", "chain", nome_chain, "sync", "recv", endereco], capture_output=True, check=True, timeout=3)
+        except subprocess.TimeoutExpired as e:
+            print(f"[SYNC] O peer {endereco} demorou muito para responder")
+            continue
+
+        except subprocess.CalledProcessError as e:
+            # Se o peer estiver offline ou inacessível, apenas imprime um aviso, sem travar o loop
+            erro = e.stderr.strip() if e.stderr else "Inacessível/Offline"
+            print(f"[SYNC] Aviso: Não foi possível sincronizar com {endereco}: {erro}")
+            continue 
 
 def limpar_revogados(nome_chain, conn, cursor):
     cursor.execute("SELECT hash_id FROM Mensagens")

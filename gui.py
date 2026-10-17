@@ -26,7 +26,7 @@ class Setup(ctk.CTk):
         self.lbl_info.pack(pady=(10, 10))
         
         # botao de criar
-        self.btn_criar = ctk.CTkButton(self, text="Criar Cadeia!", command=self.criar_zero, fg_color="purple")
+        self.btn_criar = ctk.CTkButton(self, text="Criar Cadeia!", command=self.criar_zero, fg_color="MediumPurple2", hover_color="MediumPurple4")
         self.btn_criar.pack(pady=10)
         
         # botao de clonar
@@ -36,17 +36,17 @@ class Setup(ctk.CTk):
         self.entry_peer = ctk.CTkEntry(self.frame_clone, placeholder_text="Ex: 192.168.1.5:8330", width=220)
         self.entry_peer.pack(side="left", padx=(0, 10))
         
-        self.btn_clone = ctk.CTkButton(self.frame_clone, text="Clonar!", command=self.clonar_peer, fg_color="purple",width=80)
+        self.btn_clone = ctk.CTkButton(self.frame_clone, text="Clonar!", command=self.clonar_peer, fg_color="MediumPurple2", hover_color="MediumPurple4", width=80)
         self.btn_clone.pack(side="left")
 
     def criar_zero(self):
-        if iniciar_chain(self.nome_chain): # Chama função do sync.py
+        if iniciar_chain(self.nome_chain, self.conn, self.cursor): # Chama função do sync.py
             self.destroy() # Se deu certo, fecha essa janela para a principal abrir
 
     def clonar_peer(self):
         peer = self.entry_peer.get().strip()
         if peer:
-            if iniciar_chain(self.nome_chain, peer): # Clona do IP digitado
+            if iniciar_chain(self.nome_chain, self.conn, self.cursor, peer): # Clona do IP digitado
                 self.destroy()
 
 class AppGUI(ctk.CTk):
@@ -108,12 +108,12 @@ class AppGUI(ctk.CTk):
         self.entry_link = ctk.CTkEntry(self.frame_lateral, placeholder_text="Link")
         self.entry_link.grid(row=4, column=0, padx=20, pady=10, sticky="ew") # Mudou para row=4
         
-        self.btn_enviar = ctk.CTkButton(self.frame_lateral, text="Postar", fg_color="purple", command=self.evento_postar)
+        self.btn_enviar = ctk.CTkButton(self.frame_lateral, text="Postar", fg_color="MediumPurple2", hover_color="MediumPurple4", command=self.evento_postar)
         self.btn_enviar.grid(row=5, column=0, padx=20, pady=20) # Mudou para row=5
 
         # --- BOTAO DE RESET ---
         self.frame_lateral.grid_rowconfigure(6, weight=1) # Empurra o reset para baixo
-        self.btn_reset = ctk.CTkButton(self.frame_lateral, text="Reset", fg_color="red", hover_color="darkred", command=self.evento_resetar)
+        self.btn_reset = ctk.CTkButton(self.frame_lateral, text="Reset", fg_color="MediumPurple2", hover_color="red", command=self.evento_resetar)
         self.btn_reset.grid(row=7, column=0, padx=20, pady=20, sticky="s")
         
         # --- ÁREA PRINCIPAL (Busca e Feed) ---
@@ -127,10 +127,10 @@ class AppGUI(ctk.CTk):
         self.frame_busca.grid(row=0, column=0, sticky="ew")
         self.frame_busca.grid_columnconfigure(0, weight=1)
         
-        self.entry_busca = ctk.CTkEntry(self.frame_busca, placeholder_text="Buscar por tags (Ex: terror, filmes)...")
+        self.entry_busca = ctk.CTkEntry(self.frame_busca, placeholder_text="Buscar por Tags e Título (Título, X, Y, Z")
         self.entry_busca.grid(row=0, column=0, padx=(0, 10), pady=10, sticky="ew")
         
-        self.btn_buscar = ctk.CTkButton(self.frame_busca, text="Buscar", fg_color="purple", command=self.evento_buscar)
+        self.btn_buscar = ctk.CTkButton(self.frame_busca, text="Buscar", fg_color="MediumPurple2", hover_color="MediumPurple4", command=self.evento_buscar)
         self.btn_buscar.grid(row=0, column=1, pady=10)
         
         # Feed de Conteúdo (Scrollable)
@@ -138,33 +138,53 @@ class AppGUI(ctk.CTk):
         self.scroll_feed.grid(row=1, column=0, sticky="nsew")
 
 
-        # --- MENU LATERAL DIREITO (Begs e Reps) ---
+# --- MENU LATERAL DIREITO (Begs, Reps e Peers) ---
         self.frame_begs = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.frame_begs.grid(row=0, column=2, sticky="nsew")
         self.frame_begs.grid_columnconfigure(0, weight=1)
         
-        # Faz com que a linha da lista de begs cresça, empurrando o botão para baixo
+        # Faz com que as listas (begs e peers) cresçam para preencher o espaço
         self.frame_begs.grid_rowconfigure(2, weight=1) 
+        self.frame_begs.grid_rowconfigure(6, weight=1) 
 
-        # Linha 0: Título de Reputação
-        self.lbl_reps = ctk.CTkLabel(self.frame_begs, text=f"Reps: {reps(self.nome_chain)}", font=ctk.CTkFont(size=16, weight="bold"), text_color="purple")
+        # --- SEÇÃO: REPUTAÇÃO ---
+        self.lbl_reps = ctk.CTkLabel(self.frame_begs, text=f"Reps: {reps(self.nome_chain)}", font=ctk.CTkFont(size=16, weight="bold"), text_color="MediumPurple2")
         self.lbl_reps.grid(row=0, column=0, padx=20, pady=(20, 5), sticky="w")
 
-        # Linha 1: Título de Begs
-        self.titulo_begs = ctk.CTkLabel(self.frame_begs, text="Begs Pendentes", font=ctk.CTkFont(size=18, weight="bold"))
-        self.titulo_begs.grid(row=1, column=0, padx=10, pady=(10, 10))
+        # --- SEÇÃO: BEGS ---
+        self.titulo_begs = ctk.CTkLabel(self.frame_begs, text="Begs Pendentes", font=ctk.CTkFont(size=16, weight="bold"))
+        self.titulo_begs.grid(row=1, column=0, padx=10, pady=(10, 5))
 
-        # Linha 2: Lista Rolável de Begs
         self.scroll_begs = ctk.CTkScrollableFrame(self.frame_begs, fg_color="transparent")
         self.scroll_begs.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
 
-        # Linha 3: Botão de Atualizar
-        self.btn_atualizar_begs = ctk.CTkButton(self.frame_begs, text="Atualizar Begs", fg_color="purple", command=self.carregar_begs)
-        self.btn_atualizar_begs.grid(row=3, column=0, padx=10, pady=20)
+        self.btn_atualizar_begs = ctk.CTkButton(self.frame_begs, text="Atualizar Begs", fg_color="MediumPurple2", hover_color="MediumPurple4", command=self.carregar_begs)
+        self.btn_atualizar_begs.grid(row=3, column=0, padx=10, pady=5)
+
+        # --- SEÇÃO: PEERS (Nova) ---
+        # Separador visual
+        self.separador = ctk.CTkFrame(self.frame_begs, height=2, fg_color="gray")
+        self.separador.grid(row=4, column=0, sticky="ew", padx=20, pady=10)
+
+        self.titulo_peers = ctk.CTkLabel(self.frame_begs, text="Peers (Rede)", font=ctk.CTkFont(size=16, weight="bold"))
+        self.titulo_peers.grid(row=5, column=0, padx=10, pady=(5, 5))
+
+        self.scroll_peers = ctk.CTkScrollableFrame(self.frame_begs, fg_color="transparent")
+        self.scroll_peers.grid(row=6, column=0, sticky="nsew", padx=10, pady=5)
+
+        # Frame inferior para adicionar novos peers (Entrada + Botão)
+        self.frame_add_peer = ctk.CTkFrame(self.frame_begs, fg_color="transparent")
+        self.frame_add_peer.grid(row=7, column=0, sticky="ew", padx=10, pady=(5, 20))
+        self.frame_add_peer.grid_columnconfigure(0, weight=1)
+
+        self.entry_novo_peer = ctk.CTkEntry(self.frame_add_peer, placeholder_text="Ex: 192.168.0.5:8330", width=150)
+        self.entry_novo_peer.grid(row=0, column=0, padx=(0, 5))
+
+        self.btn_add_peer = ctk.CTkButton(self.frame_add_peer, text="+", width=40, fg_color="MediumPurple2", hover_color="MediumPurple4", command=self.evento_adicionar_peer)
+        self.btn_add_peer.grid(row=0, column=1)
 
         self.carregar_begs() # Carrega automaticamente ao iniciar
-
-        self.carregar_begs() # Carrega automaticamente ao iniciar
+        self.carregar_peers() # Carrega automaticamente ao iniciar
   
     # eventos!!
 
@@ -305,7 +325,7 @@ class AppGUI(ctk.CTk):
         resultados = busca(tags_pesquisa, self.cursor)
         
         if not resultados:
-            ctk.CTkLabel(self.scroll_feed, text="Nenhum arquivo encontrado.").pack(pady=20)
+            ctk.CTkLabel(self.scroll_feed, text="Nenhum post encontrado.").pack(pady=20)
             return
 
         # Desenha resultados reais
@@ -356,3 +376,59 @@ class AppGUI(ctk.CTk):
         btn_denunciar = ctk.CTkButton(frame_reps, text="Denunciar", width=80, fg_color="red", hover_color="darkred",
                                       command=lambda: self.acao_denunciar(hash_id, entry_qtd.get()))
         btn_denunciar.pack(side="left")
+
+    def carregar_peers(self):
+        # Limpa os peers atuais da tela
+        for widget in self.scroll_peers.winfo_children():
+            widget.destroy()
+            
+        try:
+            # Busca todos os peers cadastrados na tabela SQLite
+            self.cursor.execute("SELECT endereco FROM Peers")
+            lista_peers = self.cursor.fetchall()
+            
+            if not lista_peers:
+                ctk.CTkLabel(self.scroll_peers, text="Nenhum peer cadastrado.", text_color="gray").pack(pady=20)
+                return
+                
+            for peer in lista_peers:
+                endereco = peer[0] # fetchall retorna uma lista de tuplas
+                self.adicionar_item_peer(endereco)
+                
+        except Exception as e:
+            ctk.CTkLabel(self.scroll_peers, text="Erro ao carregar peers.", text_color="red").pack(pady=20)
+            print(f"[GUI] Erro ao listar peers: {e}")
+
+    def adicionar_item_peer(self, endereco):
+            # Cria um bloco visual para cada peer
+            frame_peer = ctk.CTkFrame(self.scroll_peers, fg_color="#2b2b2b")
+            frame_peer.pack(fill="x", padx=5, pady=2)
+            
+            lbl_endereco = ctk.CTkLabel(frame_peer, text=endereco, font=ctk.CTkFont(size=12))
+            lbl_endereco.pack(side="left", padx=10, pady=5)
+            
+            # (Opcional) Poderíamos adicionar um botão "X" aqui para deletar o peer futuramente
+
+    def evento_adicionar_peer(self):
+            novo_peer = self.entry_novo_peer.get().strip()
+            
+            if not novo_peer:
+                return
+                
+            try:
+                # Tenta inserir o peer na tabela do banco de dados
+                from sync import add_peer_db
+                # Nota: a função add_peer_db já está definida no seu arquivo sync.py original
+                add_peer_db(novo_peer, self.conn, self.cursor)
+                
+                # Limpa a caixa de texto
+                self.entry_novo_peer.delete(0, 'end')
+                
+                # Recarrega a lista para mostrar o novo peer
+                self.carregar_peers()
+                
+            except Exception as e:
+                # Pode falhar se for duplicado, pois a coluna endereco é UNIQUE no SQLite
+                print(f"[GUI] Falha ao adicionar peer (já existe ou erro SQL): {e}")
+                self.entry_novo_peer.delete(0, 'end')
+                self.entry_novo_peer.insert(0, "Erro/Duplicado")
