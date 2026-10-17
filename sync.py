@@ -134,7 +134,7 @@ def enviar_post(titulo, tags, link, nome_chain, chave="./tmp/chaves/user"):
     payload = {"titulo": titulo, "tags": tags, "link": link}
     payload_json = json.dumps(payload)
     try:
-        if reps(nome_chain) == 0: # se nao tem reps, faz um beg
+        if reps(nome_chain) == "0": # se nao tem reps, faz um beg
             subprocess.run(["freechains", "chain", nome_chain, "post", "inline", payload_json, "--beg", f"--sign={caminho_abs}"], check=True)
             print(f"Post enviado para o Freechains: {payload_json}")
         else:
