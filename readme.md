@@ -8,6 +8,7 @@
     ```
     sudo apt install python3-tk
     pip3 install customtkinter --break-system-packages
+    pip3 install Pillow --break-system-packages
     ```
 2. É necessário **configurar o** caminho do **Freechains** para ele funcionar:
     ```

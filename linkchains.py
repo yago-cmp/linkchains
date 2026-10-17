@@ -10,7 +10,7 @@ CHAIN_NAME = "#torrents"
 if __name__ == "__main__":
     if os.path.isfile("./tmp/chaves/user") == False: # se as chaves do usuario nao existem
         os.makedirs("./tmp/chaves", exist_ok=True) # cria a pasta
-        subprocess.run(["ssh-keygen", "-t", "ed25519", "-N", "", "-C", "", "-f","./tmp/chaves/user", "&"]) #cria as chaves do usuario
+        subprocess.run(["ssh-keygen", "-t", "ed25519", "-N", "", "-C", "", "-f","./tmp/chaves/user"]) #cria as chaves do usuario
 
     if not chain_existe(CHAIN_NAME):
             setup_app = Setup(CHAIN_NAME) # cria e inicia a GUI de setup inicial
@@ -28,5 +28,5 @@ if __name__ == "__main__":
     thread_sync = threading.Thread(target=worker_sync, args=(CHAIN_NAME, conn, cursor, True), daemon=True)
     thread_sync.start() # cria e inicia a sincronizacao em outra thread
 
-    app = AppGUI(CHAIN_NAME, cursor) # cria e inicia a GUI na thread principal
+    app = AppGUI(CHAIN_NAME, conn, cursor) # cria e inicia a GUI na thread principal
     app.mainloop()
