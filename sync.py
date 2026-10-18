@@ -53,7 +53,7 @@ def recv_peers(nome_chain, cursor): # faz o recv de todos os peers conhecidos
     lista = cursor.fetchall()
     #para cada peer conhecido da lista, faz um recv
     for peer in lista:
-        endereco = peer[0]
+        endereco = peer[0] # retira da tupla!
         try:
             subprocess.run(["freechains", "chain", nome_chain, "sync", "recv", endereco], capture_output=True, check=True, timeout=3)
         except subprocess.TimeoutExpired as e:

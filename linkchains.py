@@ -16,9 +16,9 @@ if __name__ == "__main__":
             setup_app = Setup(CHAIN_NAME) # cria e inicia a GUI de setup inicial
             setup_app.mainloop() # programa pausa, janela inicial de setup
             
-            if not chain_existe(CHAIN_NAME):
+            if not chain_existe(CHAIN_NAME): # se apos o setup, nao houver chain
                 print("Programa fechado!")
-                exit()
+                exit() # fecha o programa
 
     conn = sqlite3.connect('freechains_index.db', check_same_thread=False)
     cursor = conn.cursor()
