@@ -7,13 +7,12 @@
 1. É preciso **instalar o Tkinter**, o **Custom Tkinter** e o **Pillow** para a interface gráfica:
     ```
     sudo apt install python3-tk
-    pip3 install customtkinter --break-system-packages
-    pip3 install Pillow --break-system-packages
+    pip install customtkinter --break-system-packages
+    pip install Pillow --break-system-packages
     ```
 2. É necessário **instalar e configurar o** caminho do **Freechains** para ele funcionar:
     ```
-    sudo apt install git openssh-client lua5.4 luarocks
-    sudo luarocks --lua-version=5.4 install freechains
+    luarocks --local --lua-version=5.4 install freechains
     eval $(luarocks --lua-version=5.4 path --bin) 
     freechains --version 
     ```
