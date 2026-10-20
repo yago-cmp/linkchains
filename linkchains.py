@@ -18,7 +18,7 @@ if __name__ == "__main__":
         subprocess.run(["ssh-keygen", "-t", "ed25519", "-N", "", "-C", "", "-f","./tmp/chaves/user"]) #cria as chaves do usuario
 
     if not chain_existe(CHAIN_NAME):
-            setup_app = Setup(CHAIN_NAME) # cria e inicia a GUI de setup inicial
+            setup_app = Setup(CHAIN_NAME, conn, cursor) # cria e inicia a GUI de setup inicial
             setup_app.mainloop() # programa pausa, janela inicial de setup
             
             if not chain_existe(CHAIN_NAME): # se apos o setup, nao houver chain
