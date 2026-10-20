@@ -10,9 +10,12 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 class Setup(ctk.CTk):
-    def __init__(self, nome_chain):
+    def __init__(self, nome_chain, conn, cursor):
         super().__init__()
         self.nome_chain = nome_chain
+        
+        self.conn = conn       
+        self.cursor = cursor
         
         self.title("LinkChains Setup")
         self.geometry("450x250")
